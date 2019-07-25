@@ -3,17 +3,30 @@ const app = angular.module('angulaReddit', ['ui.router'])
 app.factory('posts', ['$http', function($http){
     let o = {
         posts: []
-    };
+    }
+    o.get = function(id) {
+        return $http.get('/posts/'+id)
+            // .success(function(post){
+            //     return post
+            // })
+    }
     o.getAll = function() {
         return $http.get('/posts').success(function(data){
             angular.copy(data, o.posts)
         })
-    };
+    }
     o.create = function(post) {
         return $http.post('/posts', post).success(function(data){
             o.posts.push(data)
         })
     }
+    o.upvote = function(post) {
+        return $http.put('/posts/' + post._id + '/upvote')
+            .success(function(data) {
+                post.upvotes += 1
+            })
+    }
+    
     return o
 }])
 
@@ -31,28 +44,28 @@ app.controller('MainCtrl',
             $scope.link = ""
           }
         $scope.upVote = function(post) {
-            post.upvotes += 1
+            posts.upvote(post)
         }
     }]
-);
+)
 
 app.controller('PostsCtrl',
     ['$scope', '$stateParams', 'posts', function($scope, $stateParams, posts) {
-        $scope.post = posts.posts[$stateParams.id];
+        $scope.post = posts.posts[$stateParams.id]
         $scope.addComment = function(){
-            if($scope.body === '') { return; }
+            if($scope.body === '') { return }
             $scope.post.comments.push({
               body: $scope.body,
               author: 'user',
               upvotes: 0
-            });
+            })
             $scope.body = ''
-          };
+          }
         $scope.upVote = function(comment) {
             comment.upvotes += 1
         }
     }]
-);
+)
 
 app.config(['$stateProvider', '$urlRouterProvider',
     function ($stateProvider, $urlRouterProvider) {
@@ -72,8 +85,8 @@ app.config(['$stateProvider', '$urlRouterProvider',
             url: '/posts/{id}',
             templateUrl: '/posts.html',
             controller: 'PostsCtrl'
-        });
+        })
     
-      $urlRouterProvider.otherwise('home');
+      $urlRouterProvider.otherwise('home')
     }
-]);
+])
