@@ -5,7 +5,7 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var mongoose = require('mongoose');
 
-mongoose.connect('mongodb://localhost/news')
+mongoose.connect('mongodb://localhost/news', { useNewUrlParser: true })
 
 require('./models/Posts')
 require('./models/Comments')

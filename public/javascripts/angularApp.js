@@ -1,33 +1,35 @@
-const app = angular.module('flapperNews', ['ui.router']);
-import router from '../routes/index'
+const app = angular.module('angulaReddit', ['ui.router'])
 
 app.factory('posts', ['$http', function($http){
-    const o = {
-        posts: router.get('/posts')
+    let o = {
+        posts: []
     };
     o.getAll = function() {
         return $http.get('/posts').success(function(data){
             angular.copy(data, o.posts)
         })
     };
-    return o;
-}]);
+    o.create = function(post) {
+        return $http.post('/posts', post).success(function(data){
+            o.posts.push(data)
+        })
+    }
+    return o
+}])
 
 app.controller('MainCtrl', 
     ['$scope', 'posts', function($scope, posts) {
-        $scope.test = 'Hello world!';
-        $scope.posts = posts.posts;
+        $scope.test = 'Hello world!'
+        $scope.posts = posts.posts
         $scope.addPost = function() {
-            if (!$scope.title || $scope.title === '') { return; }
-            $scope.posts.push({
+            if (!$scope.title || $scope.title === '') { return }
+            posts.create({
                 title: $scope.title, 
                 link: $scope.link, 
-                upvotes: 1000,
-                comments: []
-                });
-            $scope.title = "";
-            $scope.link = "";
-          };
+                })
+            $scope.title = ""
+            $scope.link = ""
+          }
         $scope.upVote = function(post) {
             post.upvotes += 1
         }
@@ -44,7 +46,7 @@ app.controller('PostsCtrl',
               author: 'user',
               upvotes: 0
             });
-            $scope.body = '';
+            $scope.body = ''
           };
         $scope.upVote = function(comment) {
             comment.upvotes += 1
@@ -59,7 +61,12 @@ app.config(['$stateProvider', '$urlRouterProvider',
         .state('home', {
           url: '/home',
           templateUrl: '/home.html',
-          controller: 'MainCtrl'
+          controller: 'MainCtrl',
+          resolve: {
+              postPromise: ['posts', function(posts) {
+                  return posts.getAll()
+              }]
+          }
         })
         .state('posts', {
             url: '/posts/{id}',
