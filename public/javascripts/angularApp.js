@@ -1,9 +1,14 @@
 const app = angular.module('flapperNews', ['ui.router']);
 import router from '../routes/index'
 
-app.factory('posts', [function(){
+app.factory('posts', ['$http', function($http){
     const o = {
         posts: router.get('/posts')
+    };
+    o.getAll = function() {
+        return $http.get('/posts').success(function(data){
+            angular.copy(data, o.posts)
+        })
     };
     return o;
 }]);
